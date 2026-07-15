@@ -1,0 +1,17 @@
+{
+  "name": "hoodbazaar",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "bot": "pnpm --filter @hoodbazaar/bot dev",
+    "api": "pnpm --filter @hoodbazaar/api dev",
+    "miniapp": "pnpm --filter @hoodbazaar/miniapp dev"
+  }
+}
