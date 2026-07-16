@@ -247,6 +247,35 @@ app.post("/v1/trade-intents/:id/submit-listing", async (req, reply) => {
   return { ok: true, result };
 });
 
+/**
+ * Public trending feed for the landing page. Cached to keep OpenSea usage
+ * flat no matter how many visitors hit the site.
+ */
+let trendingCache: { at: number; rows: unknown[] } = { at: 0, rows: [] };
+const TRENDING_TTL_MS = 120_000;
+
+app.get("/v1/trending", async () => {
+  if (Date.now() - trendingCache.at > TRENDING_TTL_MS) {
+    const top = await os.getTopCollections(6);
+    const rows = await Promise.all(
+      top.map(async (c) => {
+        const s = await os.getCollectionStats(c.slug).catch(() => null);
+        return {
+          slug: c.slug,
+          name: c.name,
+          imageUrl: c.imageUrl,
+          openseaUrl: c.openseaUrl,
+          floorEth: s?.floorPriceEth ?? null,
+          volume24hEth: s?.volume24hEth ?? 0,
+          sales24h: s?.sales24h ?? 0,
+        };
+      }),
+    );
+    trendingCache = { at: Date.now(), rows };
+  }
+  return { collections: trendingCache.rows, cachedAt: trendingCache.at };
+});
+
 /** Collection proxy — keeps the OpenSea API key server-side. */
 app.get("/v1/collections/:slug", async (req, reply) => {
   const { slug } = req.params as { slug: string };
