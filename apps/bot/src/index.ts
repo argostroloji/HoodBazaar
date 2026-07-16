@@ -5,13 +5,21 @@ import { dirname, resolve } from "node:path";
 loadEnv({ path: resolve(dirname(fileURLToPath(import.meta.url)), "../../../.env") });
 loadEnv();
 import { Bot, InlineKeyboard } from "grammy";
-import { OpenSeaClient } from "@hoodbazaar/market";
+import { createPublicClient, http } from "viem";
+import { OpenSeaClient, detectSweeps, robinhoodChain } from "@hoodbazaar/market";
+import { computeSignal } from "@hoodbazaar/signals";
 import { parseCommand } from "./parse.js";
 import {
   HELP_TEXT,
   formatFloor,
+  formatGas,
+  formatListings,
   formatPortfolio,
+  formatSales,
+  formatSignal,
+  formatSweeps,
   formatTrending,
+  formatWatchlist,
 } from "./format.js";
 import { WatchStore } from "./store.js";
 import { startWatcher } from "./watcher.js";
@@ -27,6 +35,10 @@ if (!OPENSEA_API_KEY) throw new Error("OPENSEA_API_KEY missing (see .env.example
 const bot = new Bot(BOT_TOKEN);
 const os = new OpenSeaClient({ apiKey: OPENSEA_API_KEY });
 const store = new WatchStore();
+const rpc = createPublicClient({
+  chain: robinhoodChain,
+  transport: http(process.env.ROBINHOOD_RPC_URL ?? robinhoodChain.rpcUrls.default.http[0]),
+});
 
 async function createTradeIntent(body: unknown): Promise<{ id: string; summary: string }> {
   const res = await fetch(`${API_URL}/v1/trade-intents`, {
@@ -46,6 +58,10 @@ function signButton(intentId: string): InlineKeyboard {
 /** Usage hints when someone sends a bare command without arguments. */
 const USAGE: Record<string, string> = {
   floor: "Usage: <code>floor ascii cats robinhood</code>",
+  signal: "Usage: <code>signal ascii cats robinhood</code>",
+  sweeps: "Usage: <code>sweeps ascii cats robinhood</code>",
+  listings: "Usage: <code>listings ascii cats robinhood</code>",
+  sales: "Usage: <code>sales ascii cats robinhood</code>",
   buy: "Usage: <code>buy 2 from ascii cats robinhood</code>",
   list: "Usage: <code>list my ascii-cats-robinhood #42 at floor+10%</code>",
   watch: "Usage: <code>watch ascii-cats-robinhood</code>",
@@ -146,6 +162,55 @@ bot.on("message:text", async (ctx) => {
           parse_mode: "HTML",
         });
       }
+
+      case "listings": {
+        const [c, listings] = await Promise.all([
+          os.getCollection(cmd.collection),
+          os.getBestListings(cmd.collection, 10),
+        ]);
+        return await ctx.reply(formatListings(c, listings), {
+          parse_mode: "HTML",
+          link_preview_options: { is_disabled: true },
+        });
+      }
+
+      case "sales": {
+        const [c, sales] = await Promise.all([
+          os.getCollection(cmd.collection),
+          os.getRecentSales(cmd.collection, 10),
+        ]);
+        return await ctx.reply(formatSales(c, sales), { parse_mode: "HTML" });
+      }
+
+      case "sweeps": {
+        const [c, sales] = await Promise.all([
+          os.getCollection(cmd.collection),
+          os.getRecentSales(cmd.collection, 50),
+        ]);
+        const sweeps = detectSweeps(sales, { minCount: 3, windowSeconds: 1800 });
+        return await ctx.reply(formatSweeps(c, sweeps), { parse_mode: "HTML" });
+      }
+
+      case "signal": {
+        const sig = await computeSignal(os, cmd.collection);
+        return await ctx.reply(formatSignal(sig), { parse_mode: "HTML" });
+      }
+
+      case "watchlist": {
+        return await ctx.reply(formatWatchlist(store.byChat(ctx.chat.id)), {
+          parse_mode: "HTML",
+        });
+      }
+
+      case "gas": {
+        const [gasPrice, blockNumber] = await Promise.all([
+          rpc.getGasPrice(),
+          rpc.getBlockNumber(),
+        ]);
+        return await ctx.reply(formatGas(gasPrice, blockNumber), {
+          parse_mode: "HTML",
+        });
+      }
     }
   } catch (err) {
     console.error("command failed", cmd, err);
@@ -161,11 +226,17 @@ startWatcher(bot, store, os);
 await bot.api.setMyCommands([
   { command: "trending", description: "Top Robinhood Chain collections by volume" },
   { command: "floor", description: "floor <collection> — floor price + 24h stats" },
+  { command: "signal", description: "signal <collection> — accumulation/distribution read" },
+  { command: "sweeps", description: "sweeps <collection> — recent bulk-buy activity" },
+  { command: "listings", description: "listings <collection> — cheapest live listings" },
+  { command: "sales", description: "sales <collection> — latest sales" },
   { command: "buy", description: "buy <n> from <collection> — sign in Mini App" },
   { command: "list", description: "list my <collection> #<id> at <price|floor+X%>" },
   { command: "watch", description: "watch <collection> — floor & sweep alerts" },
   { command: "unwatch", description: "unwatch <collection> — stop alerts" },
+  { command: "watchlist", description: "Your active alert subscriptions" },
   { command: "portfolio", description: "portfolio <address> — read-only holdings" },
+  { command: "gas", description: "Current Robinhood Chain gas price" },
   { command: "help", description: "How HoodBazaar works" },
 ]);
 /** Keep the input-field menu button as the command list, not a webapp. */

@@ -1,9 +1,12 @@
 import type {
   Collection,
   CollectionStats,
+  Listing,
   NftHolding,
+  Sale,
   SweepEvent,
 } from "@hoodbazaar/market";
+import type { CollectionSignal } from "@hoodbazaar/signals";
 
 const esc = (s: string) =>
   s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -64,16 +67,88 @@ export function formatFloorAlert(collection: string, from: number, to: number): 
   return `${arrow} <b>${esc(collection)}</b> floor moved ${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%: ${from} → ${to} ETH`;
 }
 
+export function formatListings(c: Collection, listings: Listing[]): string {
+  if (listings.length === 0) return `No active listings for <b>${esc(c.name)}</b>.`;
+  const lines = listings.map(
+    (l, i) => `${i + 1}. #${esc(l.tokenId)} — <b>${l.priceEth} ETH</b>`,
+  );
+  return [
+    `<b>Cheapest listings · ${esc(c.name)}</b>`,
+    ...lines,
+    `<a href="${c.openseaUrl}">View on OpenSea</a>`,
+  ].join("\n");
+}
+
+export function formatSales(c: Collection, sales: Sale[]): string {
+  if (sales.length === 0) return `No recent sales for <b>${esc(c.name)}</b>.`;
+  const lines = sales.slice(0, 10).map((s) => {
+    const ago = Math.max(1, Math.round((Date.now() / 1000 - s.eventTimestamp) / 60));
+    return `• #${esc(s.tokenId)} — ${s.priceEth} ETH <i>(${ago}m ago)</i>`;
+  });
+  return [`<b>Recent sales · ${esc(c.name)}</b>`, ...lines].join("\n");
+}
+
+export function formatSweeps(c: Collection, sweeps: SweepEvent[]): string {
+  if (sweeps.length === 0) {
+    return `No sweeps detected in <b>${esc(c.name)}</b> over the last 50 sales.`;
+  }
+  const lines = sweeps.slice(0, 3).map(
+    (s) =>
+      `🧹 <code>${esc(s.buyer.slice(0, 10))}…</code> bought <b>${s.count}</b> for ${s.totalEth.toFixed(3)} ETH in ${Math.max(1, Math.round((s.lastTimestamp - s.firstTimestamp) / 60))}m`,
+  );
+  return [`<b>Sweeps · ${esc(c.name)}</b>`, ...lines].join("\n");
+}
+
+export function formatSignal(sig: CollectionSignal): string {
+  const icon =
+    sig.signal === "accumulation" ? "🟢" : sig.signal === "distribution" ? "🔴" : "⚪";
+  const lines = [
+    `${icon} <b>${esc(sig.collection)}</b> — <b>${sig.signal.toUpperCase()}</b> (confidence ${(sig.confidence * 100).toFixed(0)}%)`,
+    `Floor: ${sig.floorEth ?? "—"} ETH · 24h vol: ${sig.volume24hEth.toFixed(3)} ETH · ${sig.sales24h} sales`,
+  ];
+  if (sig.reasons.length > 0) {
+    lines.push(...sig.reasons.map((r) => `• ${esc(r)}`));
+  }
+  lines.push(`<i>Heuristic signal — not financial advice.</i>`);
+  return lines.join("\n");
+}
+
+export function formatWatchlist(collections: string[]): string {
+  if (collections.length === 0) {
+    return "Your watchlist is empty. Add one with <code>watch &lt;collection&gt;</code>.";
+  }
+  return [
+    "<b>Your watchlist</b>",
+    ...collections.map((c) => `👀 ${esc(c)}`),
+    "<i>Alerts: floor moves ±5% and sweeps.</i>",
+  ].join("\n");
+}
+
+export function formatGas(gasWei: bigint, blockNumber: bigint): string {
+  const gwei = Number(gasWei) / 1e9;
+  return [
+    `⛽ <b>Robinhood Chain gas</b>: ${gwei.toFixed(4)} gwei`,
+    `Block: ${blockNumber}`,
+    `<i>A typical NFT buy costs well under $0.01 here.</i>`,
+  ].join("\n");
+}
+
 export const HELP_TEXT = [
   "<b>HoodBazaar</b> — NFT market intelligence for Robinhood Chain.",
   "",
   "<code>floor &lt;collection&gt;</code> — floor, 24h change, volume",
   "<code>trending</code> — top collections by volume",
+  "<code>signal &lt;collection&gt;</code> — accumulation/distribution read",
+  "<code>sweeps &lt;collection&gt;</code> — recent bulk-buy activity",
+  "<code>listings &lt;collection&gt;</code> — cheapest live listings",
+  "<code>sales &lt;collection&gt;</code> — latest sales",
   "<code>buy &lt;n&gt; from &lt;collection&gt;</code> — prep a buy, sign in the Mini App",
   "<code>list my &lt;collection&gt; #&lt;id&gt; at &lt;price | floor+X%&gt;</code> — prep a listing",
   "<code>watch &lt;collection&gt;</code> — floor + sweep alerts",
   "<code>unwatch &lt;collection&gt;</code> — stop alerts",
+  "<code>watchlist</code> — your active alerts",
   "<code>portfolio &lt;address&gt;</code> — read-only holdings",
+  "<code>gas</code> — current network gas",
   "",
   "🔐 Non-custodial by design: this bot never asks for keys or seed phrases and can never move your funds. All transactions are signed in your own wallet.",
 ].join("\n");

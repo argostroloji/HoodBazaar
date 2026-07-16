@@ -247,6 +247,8 @@ function Welcome() {
   const commands: Array<[string, string]> = [
     ["trending", "Top collections by volume"],
     ["floor ascii cats robinhood", "Floor price + 24h stats"],
+    ["signal ascii cats robinhood", "Accumulation / distribution read"],
+    ["sweeps ascii cats robinhood", "Recent bulk-buy activity"],
     ["buy 2 from ascii cats robinhood", "Prepare a buy — sign it here"],
     ["list my ascii-cats-robinhood #42 at floor+10%", "Prepare a listing"],
     ["watch ascii-cats-robinhood", "Floor & sweep alerts"],

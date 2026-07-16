@@ -12,7 +12,13 @@ export type Command =
     }
   | { kind: "watch"; collection: string }
   | { kind: "unwatch"; collection: string }
+  | { kind: "watchlist" }
   | { kind: "portfolio"; address: string }
+  | { kind: "listings"; collection: string }
+  | { kind: "sales"; collection: string }
+  | { kind: "sweeps"; collection: string }
+  | { kind: "signal"; collection: string }
+  | { kind: "gas" }
   | { kind: "help" };
 
 const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/;
@@ -23,9 +29,23 @@ export function parseCommand(raw: string): Command | null {
 
   if (lower === "help" || lower === "start") return { kind: "help" };
   if (lower === "trending") return { kind: "trending" };
+  if (lower === "watchlist" || lower === "watches") return { kind: "watchlist" };
+  if (lower === "gas") return { kind: "gas" };
 
   let m = lower.match(/^floor (.+)$/);
   if (m) return { kind: "floor", collection: slugify(m[1]!) };
+
+  m = lower.match(/^listings (.+)$/);
+  if (m) return { kind: "listings", collection: slugify(m[1]!) };
+
+  m = lower.match(/^sales (.+)$/);
+  if (m) return { kind: "sales", collection: slugify(m[1]!) };
+
+  m = lower.match(/^sweeps? (.+)$/);
+  if (m) return { kind: "sweeps", collection: slugify(m[1]!) };
+
+  m = lower.match(/^signal (.+)$/);
+  if (m) return { kind: "signal", collection: slugify(m[1]!) };
 
   m = lower.match(/^buy (\d+) from (.+)$/);
   if (m) {

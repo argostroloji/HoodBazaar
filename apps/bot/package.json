@@ -12,8 +12,10 @@
   },
   "dependencies": {
     "@hoodbazaar/market": "workspace:*",
+    "@hoodbazaar/signals": "workspace:*",
     "dotenv": "^16.4.5",
-    "grammy": "^1.30.0"
+    "grammy": "^1.30.0",
+    "viem": "^2.21.0"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",

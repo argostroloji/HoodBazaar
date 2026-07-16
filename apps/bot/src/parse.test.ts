@@ -43,6 +43,27 @@ test("list at floor+10%", () => {
   });
 });
 
+test("intelligence commands parse to slugs", () => {
+  assert.deepEqual(parseCommand("signal ascii cats robinhood"), {
+    kind: "signal",
+    collection: "ascii-cats-robinhood",
+  });
+  assert.deepEqual(parseCommand("/sweeps ascii-cats-robinhood"), {
+    kind: "sweeps",
+    collection: "ascii-cats-robinhood",
+  });
+  assert.deepEqual(parseCommand("listings rob bob"), {
+    kind: "listings",
+    collection: "rob-bob",
+  });
+  assert.deepEqual(parseCommand("sales rob bob"), {
+    kind: "sales",
+    collection: "rob-bob",
+  });
+  assert.deepEqual(parseCommand("watchlist"), { kind: "watchlist" });
+  assert.deepEqual(parseCommand("gas"), { kind: "gas" });
+});
+
 test("portfolio requires a valid address", () => {
   assert.equal(parseCommand("portfolio not-an-address"), null);
   assert.deepEqual(

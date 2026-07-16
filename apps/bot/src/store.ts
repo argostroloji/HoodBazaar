@@ -56,6 +56,10 @@ export class WatchStore {
     return this.subs;
   }
 
+  byChat(chatId: number): string[] {
+    return this.subs.filter((s) => s.chatId === chatId).map((s) => s.collection);
+  }
+
   update(sub: WatchSubscription) {
     this.persist();
   }
