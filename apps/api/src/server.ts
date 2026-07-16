@@ -27,7 +27,8 @@ if (!/^0x[a-fA-F0-9]{40}$/.test(TREASURY)) {
   throw new Error("TREASURY_ADDRESS must be a valid address (see .env.example)");
 }
 const FEE_BPS = Number(process.env.MARKETPLACE_FEE_BPS ?? "100");
-const PORT = Number(process.env.API_PORT ?? "8787");
+// Railway/Render inject PORT; API_PORT is the local-dev override
+const PORT = Number(process.env.PORT ?? process.env.API_PORT ?? "8787");
 
 const os = new OpenSeaClient({ apiKey: OPENSEA_API_KEY });
 const rpc = makeRpcClient(process.env.ROBINHOOD_RPC_URL);
