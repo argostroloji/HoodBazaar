@@ -41,7 +41,7 @@ createAppKit({
     name: "HoodBazaar",
     description: "Non-custodial NFT trading on Robinhood Chain",
     url: window.location.origin,
-    icons: [],
+    icons: [`${window.location.origin}/logo.svg`],
   },
   features: {
     analytics: false,

@@ -1,4 +1,9 @@
-import "dotenv/config";
+import { config as loadEnv } from "dotenv";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
+// Load the monorepo root .env first, then any local override
+loadEnv({ path: resolve(dirname(fileURLToPath(import.meta.url)), "../../../.env") });
+loadEnv();
 import { createServer } from "node:http";
 import handler from "./x402.js";
 

@@ -1,4 +1,9 @@
-import "dotenv/config";
+import { config as loadEnv } from "dotenv";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
+// Load the monorepo root .env first, then any local override
+loadEnv({ path: resolve(dirname(fileURLToPath(import.meta.url)), "../../../.env") });
+loadEnv();
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
@@ -94,6 +99,11 @@ app.post("/v1/trade-intents", async (req, reply) => {
   }
 
   // list
+  if (/^0x0{40}$/i.test(TREASURY)) {
+    return reply
+      .code(503)
+      .send({ error: "Listing is disabled until TREASURY_ADDRESS is configured — the fee would be burned" });
+  }
   const collection = await os.getCollection(body.collection);
   if (!collection.contractAddress) {
     return reply.code(404).send({ error: "Collection contract not found" });

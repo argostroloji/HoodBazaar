@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.svg" width="128" alt="HoodBazaar" />
+</p>
+
 # HoodBazaar
 
 Telegram-native, **fully non-custodial** NFT marketplace layer for **Robinhood Chain** (Arbitrum Orbit L2, chain ID **4663**).
