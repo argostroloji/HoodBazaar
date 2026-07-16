@@ -175,11 +175,15 @@ const COMMANDS: Array<[string, string]> = [
   ["signal ascii cats robinhood", "Accumulation / distribution read"],
   ["sweeps ascii cats robinhood", "Recent bulk-buy activity"],
   ["listings ascii cats robinhood", "Cheapest live listings"],
+  ["sales ascii cats robinhood", "Latest sales"],
   ["buy 2 from ascii cats robinhood", "Prepare a buy — sign it in the Mini App"],
   ["list my ascii-cats-robinhood #42 at floor+10%", "Prepare a listing"],
   ["watch ascii-cats-robinhood", "Floor & sweep alerts"],
+  ["unwatch ascii-cats-robinhood", "Stop alerts"],
+  ["watchlist", "Your active alert subscriptions"],
   ["portfolio 0xYourAddress", "Read-only holdings"],
   ["gas", "Current network gas"],
+  ["help", "How HoodBazaar works"],
 ];
 
 function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
