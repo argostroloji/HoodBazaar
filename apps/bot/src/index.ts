@@ -40,6 +40,16 @@ const rpc = createPublicClient({
   transport: http(process.env.ROBINHOOD_RPC_URL ?? robinhoodChain.rpcUrls.default.http[0]),
 });
 
+/** Trader Cards — verified on Robinhood Chain. */
+const TRADER_CARDS = (process.env.TRADER_CARDS_ADDRESS ??
+  "0xae027A57D3Bc2b481bFa3113996bA08b8bEB7cD2") as `0x${string}`;
+const traderCardsAbi = [
+  { name: "mintPrice", type: "function", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  { name: "maxSupply", type: "function", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  { name: "totalSupply", type: "function", stateMutability: "view", inputs: [], outputs: [{ type: "uint256" }] },
+  { name: "currentTier", type: "function", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
+] as const;
+
 async function createTradeIntent(body: unknown): Promise<{ id: string; summary: string }> {
   const res = await fetch(`${API_URL}/v1/trade-intents`, {
     method: "POST",
@@ -211,6 +221,35 @@ bot.on("message:text", async (ctx) => {
           parse_mode: "HTML",
         });
       }
+
+      case "mint": {
+        const [tier, minted, max, priceWei] = await Promise.all([
+          rpc.readContract({ address: TRADER_CARDS, abi: traderCardsAbi, functionName: "currentTier" }),
+          rpc.readContract({ address: TRADER_CARDS, abi: traderCardsAbi, functionName: "totalSupply" }),
+          rpc.readContract({ address: TRADER_CARDS, abi: traderCardsAbi, functionName: "maxSupply" }),
+          rpc.readContract({ address: TRADER_CARDS, abi: traderCardsAbi, functionName: "mintPrice" }),
+        ]);
+        const face = tier === "Bull" ? "📈" : tier === "Bear" ? "📉" : tier === "Crab" ? "🦀" : "❔";
+        const text = [
+          `🎴 <b>Trader Cards</b> — dynamic NFT on Robinhood Chain`,
+          `Art follows the market via a Chainlink ETH/USD feed.`,
+          ``,
+          `Market now: <b>${tier}</b> ${face}`,
+          `Minted: <b>${minted} / ${max}</b>`,
+          `Price: <b>${Number(priceWei) / 1e18} ETH</b> + gas`,
+          ``,
+          `Fully on-chain art · <a href="https://robinhoodchain.blockscout.com/address/${TRADER_CARDS}">verified contract</a>`,
+        ].join("\n");
+        const kb = new InlineKeyboard().webApp(
+          "🎴 Mint in Mini App",
+          `${MINIAPP_URL}?mint=1`,
+        );
+        return await ctx.reply(text, {
+          parse_mode: "HTML",
+          reply_markup: kb,
+          link_preview_options: { is_disabled: true },
+        });
+      }
     }
   } catch (err) {
     console.error("command failed", cmd, err);
@@ -237,6 +276,7 @@ await bot.api.setMyCommands([
   { command: "watchlist", description: "Your active alert subscriptions" },
   { command: "portfolio", description: "portfolio <address> — read-only holdings" },
   { command: "gas", description: "Current Robinhood Chain gas price" },
+  { command: "mint", description: "Mint a Trader Card — dynamic on-chain NFT" },
   { command: "help", description: "How HoodBazaar works" },
 ]);
 /** Keep the input-field menu button as the command list, not a webapp. */

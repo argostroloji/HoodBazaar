@@ -19,6 +19,7 @@ export type Command =
   | { kind: "sweeps"; collection: string }
   | { kind: "signal"; collection: string }
   | { kind: "gas" }
+  | { kind: "mint" }
   | { kind: "help" };
 
 const ADDRESS_RE = /^0x[a-fA-F0-9]{40}$/;
@@ -31,6 +32,7 @@ export function parseCommand(raw: string): Command | null {
   if (lower === "trending") return { kind: "trending" };
   if (lower === "watchlist" || lower === "watches") return { kind: "watchlist" };
   if (lower === "gas") return { kind: "gas" };
+  if (lower === "mint") return { kind: "mint" };
 
   let m = lower.match(/^floor (.+)$/);
   if (m) return { kind: "floor", collection: slugify(m[1]!) };

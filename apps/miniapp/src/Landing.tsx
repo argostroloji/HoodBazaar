@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { API_URL } from "./config";
+import { CardPreview, useTraderCardsState } from "./Mint";
 
 const GREEN = "#00C805";
 
@@ -91,6 +92,9 @@ export function Landing() {
         )}
       </Section>
 
+      {/* -------------------------------------------------- trader cards */}
+      <TraderCardsSection />
+
       {/* ---------------------------------------------------- chat demo */}
       <Section title="💬 Talk to it like a trader">
         <Bubble me>signal ascii cats robinhood</Bubble>
@@ -166,6 +170,45 @@ export function Landing() {
         your funds.
       </footer>
     </div>
+  );
+}
+
+function TraderCardsSection() {
+  const { tier, minted, max, priceWei } = useTraderCardsState();
+  const priceEth = priceWei != null ? Number(priceWei) / 1e18 : null;
+  return (
+    <Section
+      title="🎴 Trader Cards — our flagship NFT"
+      subtitle="Fully on-chain art that flips Bull / Crab / Bear with a live Chainlink feed"
+    >
+      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+        <CardPreview tier={tier ?? "Unknown"} size={120} />
+        <div style={{ flex: 1, textAlign: "left" }}>
+          <div style={{ fontSize: 14, marginBottom: 6 }}>
+            Market now: <b>{tier ?? "…"}</b>
+          </div>
+          <div style={{ fontSize: 13, opacity: 0.7, marginBottom: 10 }}>
+            {minted ?? "…"} / {max ?? "…"} minted
+            {priceEth != null ? ` · ${priceEth} ETH` : ""}
+          </div>
+          <a
+            href="?mint=1"
+            style={{
+              display: "inline-block",
+              padding: "10px 22px",
+              borderRadius: 10,
+              background: GREEN,
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 14,
+              textDecoration: "none",
+            }}
+          >
+            Mint yours
+          </a>
+        </div>
+      </div>
+    </Section>
   );
 }
 

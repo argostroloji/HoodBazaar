@@ -18,6 +18,13 @@ import {
   type TradeIntent,
 } from "./api";
 import { Landing } from "./Landing";
+import { Mint } from "./Mint";
+
+function isMintMode(): boolean {
+  const url = new URL(window.location.href);
+  if (url.searchParams.get("mint") != null) return true;
+  return window.Telegram?.WebApp?.initDataUnsafe?.start_param === "mint";
+}
 
 const erc721Abi = [
   {
@@ -181,7 +188,7 @@ export function App() {
     }
   }
 
-  if (!intentId) return <Landing />;
+  if (!intentId) return isMintMode() ? <Mint /> : <Landing />;
   if (loadError) return <Screen><p>⚠️ {loadError}</p></Screen>;
   if (!intent) return <Screen><p>Loading trade…</p></Screen>;
 

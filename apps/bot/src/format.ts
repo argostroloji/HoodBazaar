@@ -149,6 +149,7 @@ export const HELP_TEXT = [
   "<code>watchlist</code> — your active alerts",
   "<code>portfolio &lt;address&gt;</code> — read-only holdings",
   "<code>gas</code> — current network gas",
+  "<code>mint</code> — mint a Trader Card 🎴 (dynamic on-chain NFT)",
   "",
   "🔐 Non-custodial by design: this bot never asks for keys or seed phrases and can never move your funds. All transactions are signed in your own wallet.",
 ].join("\n");
