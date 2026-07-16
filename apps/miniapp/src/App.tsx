@@ -262,6 +262,21 @@ function Welcome() {
         <p style={{ opacity: 0.7, marginTop: 0 }}>
           NFT trading on Robinhood Chain — non-custodial, signed in your own wallet.
         </p>
+        <a
+          href="https://t.me/HoodBazaarbot"
+          style={{
+            ...btnStyle,
+            display: "inline-block",
+            width: "auto",
+            padding: "12px 28px",
+            textDecoration: "none",
+            background: "#00C805",
+            color: "#fff",
+            marginTop: 4,
+          }}
+        >
+          ▶ Open @HoodBazaarbot
+        </a>
       </div>
       <Card>
         <p style={{ marginTop: 0, fontWeight: 700 }}>Message the bot to start:</p>
