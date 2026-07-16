@@ -1,0 +1,36 @@
+{
+  "network": "base",
+  "currency": "USDC",
+  "services": {
+    "signals": {
+      "price": "0.25",
+      "description": "NFT market intelligence for Robinhood Chain collections: floor, 24h stats, sweep detection and an accumulation/distribution signal with confidence and reasons. GET ?collection=<opensea-slug>.",
+      "methods": ["GET"],
+      "scheme": "exact",
+      "schema": {
+        "input": {
+          "type": "object",
+          "properties": {
+            "collection": {
+              "type": "string",
+              "description": "OpenSea collection slug on Robinhood Chain, e.g. ascii-cats-robinhood"
+            }
+          },
+          "required": ["collection"]
+        },
+        "output": {
+          "type": "object",
+          "properties": {
+            "signal": { "type": "string", "description": "accumulation | distribution | neutral" },
+            "confidence": { "type": "number", "description": "0..1" },
+            "reasons": { "type": "array", "description": "Human-readable evidence" },
+            "floorEth": { "type": "number", "description": "Current floor price in ETH" },
+            "volume24hEth": { "type": "number" },
+            "sales24h": { "type": "number" },
+            "sweeps": { "type": "array", "description": "Detected bulk-buy events" }
+          }
+        }
+      }
+    }
+  }
+}
