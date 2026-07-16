@@ -31,7 +31,8 @@ contract TraderCards is ERC721, Ownable {
     int256 public immutable bearThreshold;
 
     /// @notice Feed answers older than this are treated as unreliable.
-    uint256 public constant STALE_AFTER = 24 hours;
+    /// @dev Robinhood Chain feeds heartbeat at 24h — allow 2x before Unknown.
+    uint256 public constant STALE_AFTER = 48 hours;
 
     uint256 public totalSupply;
 
