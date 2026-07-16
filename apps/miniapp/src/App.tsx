@@ -180,7 +180,7 @@ export function App() {
     }
   }
 
-  if (!intentId) return <Screen><p>Open this app from the HoodBazaar bot.</p></Screen>;
+  if (!intentId) return <Welcome />;
   if (loadError) return <Screen><p>⚠️ {loadError}</p></Screen>;
   if (!intent) return <Screen><p>Loading trade…</p></Screen>;
 
@@ -239,6 +239,54 @@ export function App() {
           {status && <p style={{ fontSize: 13 }}>{status}</p>}
         </>
       )}
+    </Screen>
+  );
+}
+
+function Welcome() {
+  const commands: Array<[string, string]> = [
+    ["trending", "Top collections by volume"],
+    ["floor ascii cats robinhood", "Floor price + 24h stats"],
+    ["buy 2 from ascii cats robinhood", "Prepare a buy — sign it here"],
+    ["list my ascii-cats-robinhood #42 at floor+10%", "Prepare a listing"],
+    ["watch ascii-cats-robinhood", "Floor & sweep alerts"],
+    ["portfolio 0xYourAddress", "Read-only holdings"],
+  ];
+  return (
+    <Screen>
+      <div style={{ textAlign: "center", marginBottom: 16 }}>
+        <img src="/logo.svg" width={88} height={88} alt="HoodBazaar" style={{ borderRadius: 22 }} />
+        <h2 style={{ margin: "12px 0 4px" }}>HoodBazaar</h2>
+        <p style={{ opacity: 0.7, marginTop: 0 }}>
+          NFT trading on Robinhood Chain — non-custodial, signed in your own wallet.
+        </p>
+      </div>
+      <Card>
+        <p style={{ marginTop: 0, fontWeight: 700 }}>Message the bot to start:</p>
+        {commands.map(([c, d]) => (
+          <div key={c} style={{ margin: "10px 0" }}>
+            <code
+              style={{
+                display: "block",
+                background: "rgba(127,127,127,0.15)",
+                borderRadius: 8,
+                padding: "6px 10px",
+                fontSize: 13,
+                overflowX: "auto",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {c}
+            </code>
+            <span style={{ fontSize: 12, opacity: 0.65 }}>{d}</span>
+          </div>
+        ))}
+      </Card>
+      <p style={{ fontSize: 13, opacity: 0.7 }}>
+        When you prepare a buy or listing in chat, a <b>Sign in Mini App</b>{" "}
+        button brings you back here to confirm and sign. 🔐 HoodBazaar never
+        holds your funds.
+      </p>
     </Screen>
   );
 }

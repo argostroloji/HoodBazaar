@@ -43,15 +43,27 @@ function signButton(intentId: string): InlineKeyboard {
   return new InlineKeyboard().webApp("✍️ Sign in Mini App", url);
 }
 
+/** Usage hints when someone sends a bare command without arguments. */
+const USAGE: Record<string, string> = {
+  floor: "Usage: <code>floor ascii cats robinhood</code>",
+  buy: "Usage: <code>buy 2 from ascii cats robinhood</code>",
+  list: "Usage: <code>list my ascii-cats-robinhood #42 at floor+10%</code>",
+  watch: "Usage: <code>watch ascii-cats-robinhood</code>",
+  unwatch: "Usage: <code>unwatch ascii-cats-robinhood</code>",
+  portfolio: "Usage: <code>portfolio 0xYourAddress</code>",
+};
+
 bot.command(["start", "help"], (ctx) =>
   ctx.reply(HELP_TEXT, { parse_mode: "HTML", link_preview_options: { is_disabled: true } }),
 );
 
 bot.on("message:text", async (ctx) => {
+  const bare = ctx.message.text.trim().replace(/^\//, "").toLowerCase();
   const cmd = parseCommand(ctx.message.text);
   if (!cmd) {
+    const usage = USAGE[bare];
     return ctx.reply(
-      "I didn't understand that. Send <code>help</code> for commands.",
+      usage ?? "I didn't understand that. Send <code>help</code> for commands.",
       { parse_mode: "HTML" },
     );
   }
@@ -144,6 +156,20 @@ bot.on("message:text", async (ctx) => {
 });
 
 startWatcher(bot, store, os);
+
+/** Register the command list so it shows in the "/" menu and bot profile. */
+await bot.api.setMyCommands([
+  { command: "trending", description: "Top Robinhood Chain collections by volume" },
+  { command: "floor", description: "floor <collection> — floor price + 24h stats" },
+  { command: "buy", description: "buy <n> from <collection> — sign in Mini App" },
+  { command: "list", description: "list my <collection> #<id> at <price|floor+X%>" },
+  { command: "watch", description: "watch <collection> — floor & sweep alerts" },
+  { command: "unwatch", description: "unwatch <collection> — stop alerts" },
+  { command: "portfolio", description: "portfolio <address> — read-only holdings" },
+  { command: "help", description: "How HoodBazaar works" },
+]);
+/** Keep the input-field menu button as the command list, not a webapp. */
+await bot.api.setChatMenuButton({ menu_button: { type: "commands" } });
 
 bot.start({
   onStart: (me) => console.log(`@${me.username} up. Non-custodial mode: ON`),
