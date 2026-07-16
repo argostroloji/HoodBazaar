@@ -48,6 +48,8 @@ flowchart LR
 | Testnet | chain ID `46630`, `rpc.testnet.chain.robinhood.com` | same |
 | OpenSea chain slug | `robinhood` | opensea-js `Chain` enum |
 | Seaport 1.6 | `0x0000000000000068F116a894984e2DB1123eB395` | bytecode verified on 4663 via `eth_getCode` |
+| Chainlink ETH/USD | `0x78F3556b67E17Df817D51Ef5a990cDaF09E8d3A9` | Chainlink RDD, 8 decimals, 24h heartbeat |
+| **Trader Cards (deployed)** | [`0xae027A57D3Bc2b481bFa3113996bA08b8bEB7cD2`](https://robinhoodchain.blockscout.com/address/0xae027A57D3Bc2b481bFa3113996bA08b8bEB7cD2) | verified on Blockscout, mainnet block 10924427 |
 
 ## Getting started
 
